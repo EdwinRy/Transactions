@@ -17,6 +17,7 @@ pub enum TransactionKind {
 
 pub type TransactionId = u32;
 
+/// Transaction to be carried out on an account
 #[derive(Debug, Deserialize, Clone, Copy, PartialEq)]
 pub struct Transaction {
     #[serde(alias="type")]
@@ -33,6 +34,7 @@ pub struct Transaction {
 
 
 impl Transaction {
+    // GETTERS
     pub fn id(&self) -> TransactionId { self.transaction_id }
 
     // TODO: this is used by the tests and would most definitely be used in a larger codebase
@@ -41,6 +43,7 @@ impl Transaction {
         Transaction{ kind, client_id, transaction_id, amount, success: true }
     }
 
+    /// Carry out the execution of the transaction based on it's kind
     pub fn exec(&mut self, store: &mut Store) {
         match self.kind {
             TransactionKind::Deposit => self.deposit(store),
@@ -51,6 +54,7 @@ impl Transaction {
         }
     }
 
+    /// Add funds into the client's account
     fn deposit(&mut self, store: &mut Store) {
         let client = store.get_or_create_client(self.client_id);
         if client.locked() { return ;}
@@ -59,6 +63,7 @@ impl Transaction {
         store.save_transaction(self.clone());
     }
 
+    /// Move funds out of the client's account
     fn withdraw(&mut self, store: &mut Store) {
         let client = store.get_or_create_client(self.client_id);
         if client.locked() { return ;}
@@ -66,6 +71,7 @@ impl Transaction {
         store.save_transaction(self.clone());
     }
 
+    /// Set up a dispute on a client's account
     fn dispute(&mut self, store: &mut Store) {
         let disputed_transaction = store.get_transaction(self.id()).cloned();
         let client = store.get_or_create_client(self.client_id); 
@@ -81,6 +87,7 @@ impl Transaction {
         }
     }
 
+    /// Resolve a dispute on a client's account
     fn resolve(&mut self, store: &mut Store) {
         let disputed_transaction = store.get_transaction(self.id()).cloned();
         let client = store.get_or_create_client(self.client_id); 
@@ -96,6 +103,7 @@ impl Transaction {
         }
     }
     
+    /// Charge back disputed funds from a user's account
     fn chargeback(&mut self, store: &mut Store) {
         let disputed_transaction = store.get_transaction(self.id()).cloned();
         let client = store.get_or_create_client(self.client_id); 

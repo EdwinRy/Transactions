@@ -2,6 +2,7 @@ use rust_decimal::Decimal;
 
 pub type ClientId = u16;
 
+/// Representation of the client account in storage
 #[derive(Debug, PartialEq)]
 pub struct Client {
     id: ClientId,
@@ -12,18 +13,21 @@ pub struct Client {
 
 
 impl Client {
-    
     // GETTERS
     pub fn id(&self) -> ClientId { self.id }
     pub fn available(&self) -> Decimal { self.available }
     pub fn held(&self) -> Decimal { self.held }
     pub fn locked(&self) -> bool { self.locked }
+
+    /// Calculate total based on available funds and funds held in dispute
     pub fn total(&self) -> Decimal { self.available + self.held }
 
+    /// Apply deposited funds into the client's account
     pub fn deposit(&mut self, amount: Decimal) {
         self.available += amount;
     }
 
+    /// Subtract available funds from user's account (return true or false based on whether operation was successful)
     pub fn withdraw(&mut self, amount: Decimal) -> bool {
         if self.available < amount { return false; }
         else {
@@ -32,6 +36,7 @@ impl Client {
         }
     }
 
+    /// Transfer an amount of available into "held" for the dispute (return status of whether the operation is possible)
     pub fn dispute(&mut self, amount: Decimal) -> bool {
         if self.available < amount { return false; }
         else {
@@ -41,6 +46,7 @@ impl Client {
         }
     }
 
+    /// Return funds held in dispute (return true or false depending if successful)
     pub fn resolve(&mut self, amount: Decimal) -> bool {
         if self.held < amount { return false; }
         else {
@@ -50,6 +56,7 @@ impl Client {
         }
     }
     
+    /// Remove money held in dispute and lock the account
     pub fn chargeback(&mut self, amount: Decimal) -> bool {
         if self.held < amount { return false; }
         else {
@@ -59,12 +66,13 @@ impl Client {
         }
     }
 
-    // TODO: this is used by the tests and would most definitely be used in a larger codebase
+    /// TODO: this is used by the tests and would most definitely be used in a larger codebase
     #[allow(dead_code)]
     pub fn new(id: ClientId, available: Decimal, held: Decimal, locked: bool) -> Client {
         Client { id, available, held, locked }
     }
 
+    /// Get a new empty client account with a provided ID
     pub fn default(id: ClientId) -> Client {
         Client { 
             id, 

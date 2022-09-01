@@ -4,13 +4,15 @@ use std::fs::File;
 
 
 pub struct TransactionReader<'a> {
+    /// Path to the CSV file to read
     path: &'a str,
+    /// CSV Iterator for fetching rows to be parsed
     iter: DeserializeRecordsIntoIter<File, Transaction>,
 }
 
 
 impl TransactionReader<'_> {
-    // Create a reader object to store the transaction record iterator created for given csv file path
+    /// Create a reader object to store the transaction record iterator created for given csv file path
     pub fn new(path: &str) -> TransactionReader<'_> {
         let reader = Reader::from_path(path)
             .unwrap_or_else( |_err| panic!("Couldn't find file: {}", path)); 
@@ -21,11 +23,12 @@ impl TransactionReader<'_> {
 }
 
 
-impl Iterator for TransactionReader<'_> {
-    
+impl Iterator for TransactionReader<'_> {    
     type Item = Transaction;
 
+    /// Fetch the next transaction record from the CSV
     fn next(&mut self) -> Option<Transaction> {
+        // Get the next Transaction record from the reader
         match self.iter.next() {
             None => None,
             Option::Some(result) => {

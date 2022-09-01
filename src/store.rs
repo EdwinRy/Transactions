@@ -3,6 +3,7 @@ use std::collections::{HashMap};
 use crate::{transaction::{TransactionId, Transaction}, client::{ClientId, Client}};
 
 
+/// Storage for transactions and client data
 #[derive(Debug, PartialEq)]
 pub struct Store {
     transactions: HashMap<TransactionId, Transaction>,
@@ -10,6 +11,7 @@ pub struct Store {
 }
 
 impl Store {
+    /// Init storage space for transactions and clients
     pub fn new() -> Store {
         Store {
             transactions: HashMap::new(),
@@ -17,18 +19,22 @@ impl Store {
         }
     }
 
+    /// Get client account with ID, if not found, create a new account with the ID and return it
     pub fn get_or_create_client(&mut self, id: ClientId) -> &mut Client {
         self.clients.entry(id).or_insert(Client::default(id))
     }
 
+    /// Insert transaction for storage
     pub fn save_transaction(&mut self, transaction: Transaction) {
         self.transactions.insert(transaction.id(), transaction);
     }
 
+    /// Get transaction from storage
     pub fn get_transaction(&mut self, id: TransactionId) -> Option<&mut Transaction> {
         self.transactions.get_mut(&id)
     }
 
+    /// Output a CSV of all customer records
     pub fn print_clients(&self) {
 
         // Print header
